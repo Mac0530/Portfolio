@@ -1,243 +1,181 @@
- #home {
-     position: relative;
-     background: url('../../assets/bgIMG.png');
-     background-size: cover;
-     background-repeat: repeat;
-     background-position: center;
+.section--hero {
+  border-top: 0;
+  padding-top: calc(64px + 56px + env(safe-area-inset-top, 0px));
+  padding-bottom: 80px;
 
-     .app__wrapper {
-         padding: 0;
+  @media (max-width: 600px) {
+    padding-top: calc(64px + 32px + env(safe-area-inset-top, 0px));
+  }
+}
 
-         .copyright {
-             display: none;
-         }
-     }
- }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 48px;
+  align-items: center;
 
- .app__header {
-     flex: 1;
-     width: 100%;
-     height: 100%;
-     flex-direction: row;
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+}
 
-     padding: 6rem 2rem 0;
+.hero__copy {
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+  min-width: 0;
+}
 
-     @media screen and (min-width: 2000px){
-        padding-top: 8rem;
-    }
+.hero__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--hold-c);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
 
-    @media screen and (max-width: 1200px){
-        flex-direction: column;
-    }
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--hold-c);
+  }
 
-    @media screen and (min-width: 400px){
-        padding-top: 6rem 1rem 2rem;
-    }
- }
+  &:hover {
+    border-color: var(--accent);
+  }
+}
 
- .app__header-info{
-     flex: 0.65;
-     display: flex;
-     flex-direction: column;
-     justify-content: flex-start;
-     align-items: flex-start;
-     height: 100%;
+.hero__id {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
 
-     @media screen and (max-width: 2000px) {
-         width: 100%;
-         margin-right: 0rem;
-     }
- }
+.hero__avatar {
+  flex: none;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  overflow: hidden;
+  // Matches the photo's own backdrop (warm grey at the top, white lower down),
+  // so the space around the scaled-down photo blends in.
+  background: linear-gradient(180deg, #b4ae9e 0%, #b4ae9e 20%, #f3f8fc 50%, #ffffff 100%);
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow);
 
- .app__header-badge{
-     width: 100%;
-     display: flex;
-     justify-content: flex-end;
-     align-items: flex-end;
-     flex-direction: column;
-
-     .badge-cmp, .tag-cmp {
-        padding: 1rem 2rem;
-        border: var(--white-color);
-        border-radius: 15px;
-        flex-direction: row;
-        width: auto;
-
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-     }
-
-    .tag-cmp {
-        flex-direction: column;
-        margin-top: 3rem;
-
-        p {
-            width: 100%;
-            text-transform: uppercase;
-            text-align: right;
-        }
-    }
-
-    span {
-        font-size: 2.5rem;
-
-        @media screen and (min-width: 2000px) {
-            font-size: 5rem;
-        }
-    }
-
-    @media screen and (max-width: 1200px) {
-        justify-content: flex-start;
-        align-items: flex-start;
-    }
- }
-
- .app__header-circles{
-    flex: 0.75;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: flex-start;
+  img {
+    width: 100%;
     height: 100%;
-    margin-left: 1rem;
+    object-fit: cover;
+    object-position: center;
+    // Full size, shifted right so the face (46% across the photo) sits in the middle.
+    transform: translateX(4.3%);
+    // Soften the photo's side edges into the backdrop.
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+  }
+}
 
-    div {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
+.hero__hi {
+  color: var(--muted);
+  font-weight: 500;
+}
 
-        background-color: var(--white-color);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        
-        img {
-            width: 60%;
-            height: 60%;
+.hero__name {
+  position: relative;
+  display: inline-block;
+  font: 800 clamp(3rem, 8vw, 4.75rem) / 0.95 var(--font-display);
+  letter-spacing: -0.035em;
+  color: var(--fg);
 
-        }
+  // chalk-blue underline that appears when the climber tops out
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+    height: 7px;
+    border-radius: 7px;
+    background: var(--hold-a);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s ease;
+  }
+
+  &.is-sent::after {
+    transform: scaleX(1);
+  }
+}
+
+.hero__meta {
+  font: 500 0.85rem var(--font-mono);
+  color: var(--muted);
+}
+
+.hero__tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero__summary {
+  font-size: 1.08rem;
+  color: var(--fg);
+  max-width: 56ch;
+}
+
+.hero__climb {
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.hero__wall {
+  min-width: 0;
+}
+
+// Social links (also used in the footer)
+.social {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+
+  a {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all 0.2s ease;
+
+    svg {
+      width: 15px;
+      height: 15px;
     }
 
-    // div:nth-child(1){
-    //     width: 100px;
-    //     height: 100px;
-    // }
-    // div:nth-child(2){
-    //     margin: 1.75rem;
-    //     width: 150px;
-    //     height: 150px;
-    // }
-    div:nth-child(1){
-        width: 70px;
-        height: 70px;
+    &:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-ink);
     }
-    div:nth-child(2){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(3){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(4){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(5){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(6){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(7){
-        width: 70px;
-        height: 70px;
-    }
-    div:nth-child(8){
-        width: 70px;
-        height: 70px;
-    }
-    @media screen and (min-width: 2000px) {
-        // div:nth-child(1){
-        //     width: 400px;
-        //     height: 400px;
-        // }
-        // div:nth-child(2){
-        //     width: 170px;
-        //     height: 170px;
-        // }
-        div:nth-child(1){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(2){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(3){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(4){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(5){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(6){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(7){
-            width: 200px;
-            height: 200px;
-        }
-        div:nth-child(8){
-            width: 200px;
-            height: 200px;
-        }
-        
-    }
-    @media screen and (max-width: 2000px) {
-        width: 100%;
-        flex-direction: row ;
-        flex-wrap: wrap;
-        margin-left: 0;
-
-        div {
-            margin: 1rem;
-        }
-
-    }
- }
-
- .app__header-img {
-     flex: 1;
-     height: 100%;
-
-     display: flex;
-     justify-content: flex-end;
-     align-items: flex-end;
-     position: relative;
-
-     img {
-         width: 100%;
-         object-fit: contain;
-         z-index: 1;
-     }
-
-     .overlay_circle {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-        width: 100%;
-        height: 90%;
-     }
-
-     @media screen and (max-width: 1200px){
-         margin: 2rem 0;
-     }
- }
+  }
+}

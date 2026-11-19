@@ -1,20 +1,116 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
-
+/* Design tokens. Dark is the default for every visitor; light applies only
+   when the visitor picks it with the toggle (data-theme="light" on <html>). */
 :root {
-  --font-base: "DM Sans", sans-serif;
+  --bg: #11131a;
+  --surface: #191c26;
+  --wall: #1a1e2a;
+  --fg: #e8eaf2;
+  --muted: #a0a7ba;
+  --line: #2b3143;
+  --accent: #8e96ff;
+  --accent-ink: #11131a;
+  --accent-hover: #a7adff;
+  --hold-a: #7d86ff;
+  --hold-b: #f4ab52;
+  --hold-c: #36c1a9;
+  --hold-d: #f0779a;
+  --hold-a-ink: #11131a;
+  --hold-b-ink: #11131a;
+  --hold-c-ink: #11131a;
+  --hold-d-ink: #11131a;
+  --chalk: #f4f6fb;
+  --climber: #e8eaf2;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --danger: #ff8a80;
+  --nav-bg: rgba(17, 19, 26, 0.85);
 
-  --primary-color: #edf2f8;
-  --secondary-color: #313bac;
-  --black-color: #030303;
-  --lightGray-color: #e4e4e4;
-  --gray-color: #6b7688;
-  --brown-color: #46364a;
-  --white-color: #ffffff;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-base: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  --radius: 14px;
+  --maxw: 1120px;
+  color-scheme: dark;
 }
 
-* {
+:root[data-theme="light"] {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --wall: #e6e9f1;
+  --fg: #191c28;
+  --muted: #586078;
+  --line: #d3d8e4;
+  --accent: #313bac;
+  --accent-ink: #ffffff;
+  --accent-hover: #2630a0;
+  --hold-a: #313bac;
+  --hold-b: #ef9a32;
+  --hold-c: #127a6a;
+  --hold-d: #c23a62;
+  --hold-a-ink: #ffffff;
+  --hold-b-ink: #191c28;
+  --hold-c-ink: #ffffff;
+  --hold-d-ink: #ffffff;
+  --chalk: #ffffff;
+  --climber: #191c28;
+  --shadow: 0 10px 30px rgba(25, 28, 40, 0.08);
+  --danger: #b42318;
+  --nav-bg: rgba(243, 245, 249, 0.85);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+}
+
+html {
   scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 var(--font-base);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

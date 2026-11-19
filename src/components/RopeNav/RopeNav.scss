@@ -1,0 +1,101 @@
+.rope {
+  position: fixed;
+  right: max(24px, calc(env(safe-area-inset-right, 0px) + 16px));
+  top: 18vh;
+  bottom: 14vh;
+  width: 40px;
+  z-index: 4;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 19px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(180deg, var(--hold-b) 0 8px, var(--hold-d) 8px 16px);
+    opacity: 0.85;
+  }
+
+  ul {
+    list-style: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  li {
+    position: absolute;
+    left: 0;
+    width: 40px;
+    height: 22px;
+    transform: translateY(50%);
+  }
+
+  a {
+    display: block;
+    width: 40px;
+    height: 22px;
+    position: relative;
+
+    // quickdraw carabiner
+    &::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 2px;
+      width: 14px;
+      height: 18px;
+      border: 3px solid var(--muted);
+      border-radius: 8px;
+      background: var(--bg);
+      transition: border-color 0.2s ease;
+    }
+
+    &.is-here::before {
+      border-color: var(--accent);
+    }
+
+    span {
+      position: absolute;
+      right: 46px;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font: 600 0.72rem var(--font-mono);
+      letter-spacing: 0.06em;
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid var(--line);
+      padding: 4px 8px;
+      border-radius: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover span,
+    &:focus-visible span {
+      opacity: 1;
+    }
+  }
+}
+
+.rope__me {
+  position: absolute;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  transform: translateY(50%);
+  pointer-events: none;
+  transition: bottom 0.12s linear;
+}
+
+@media (max-width: 1099px) {
+  .rope {
+    display: none;
+  }
+}

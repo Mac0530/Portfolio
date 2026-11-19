@@ -1,20 +1,13 @@
 import React from 'react';
-import { NavigationDots, SocialMedia } from '../components';
 
-const AppWrap = (Component, idName, classNames) => function HOC() {
+// Wraps a section's content in a full-width <section> with a centered inner column.
+const AppWrap = (Component, idName, classNames = '') => function HOC() {
   return (
-    <div id={idName} className={`app__container ${classNames}`}>
-      <SocialMedia />
-      <div className="app__wrapper app__flex">
+    <section id={idName} className={`section ${classNames}`.trim()} data-section={idName}>
+      <div className="section__inner">
         <Component />
-
-        <div className="copyright">
-          <p className="p-text">@2023 GUEVARRA</p>
-          <p className="p-text">All rights reserved</p>
-        </div>
       </div>
-      <NavigationDots active={idName} />
-    </div>
+    </section>
   );
 };
 

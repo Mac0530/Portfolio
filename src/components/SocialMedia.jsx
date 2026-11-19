@@ -1,22 +1,25 @@
 import React from 'react';
-import { BsTwitter, BsInstagram } from 'react-icons/bs';
-import { FaFacebookF } from 'react-icons/fa';
+import { BsTwitter } from 'react-icons/bs';
+import { FaFacebookF, FaLinkedinIn } from 'react-icons/fa';
 
+import { person } from '../data/profile';
 
-const SocialMedia = () => {
-  return (
-    <div className="app__social">
-        <div>
-            <BsTwitter/>
-        </div>
-        <div>
-            <FaFacebookF/>
-        </div>
-        <div>
-            <BsInstagram/>
-        </div>
-    </div>
-  )
-}
+const items = [
+  { href: person.links.linkedin, label: 'LinkedIn', Icon: FaLinkedinIn },
+  { href: person.links.facebook, label: 'Facebook', Icon: FaFacebookF },
+  { href: person.links.twitter, label: 'Twitter', Icon: BsTwitter },
+];
 
-export default SocialMedia
+const SocialMedia = ({ className = '' }) => (
+  <ul className={`social ${className}`.trim()}>
+    {items.map(({ href, label, Icon }) => (
+      <li key={label}>
+        <a href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>
+          <Icon aria-hidden="true" />
+        </a>
+      </li>
+    ))}
+  </ul>
+);
+
+export default SocialMedia;

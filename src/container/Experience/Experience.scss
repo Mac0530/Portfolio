@@ -1,0 +1,122 @@
+.exp {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.exp__route {
+  position: relative;
+  padding: 28px 24px;
+}
+
+// The dashed route line, drawn upward from the first job.
+.exp__line {
+  position: absolute;
+  left: 41px;
+  top: 40px;
+  bottom: 40px;
+  border-left: 3px dashed var(--hold-a);
+  transform-origin: bottom;
+  opacity: 0.8;
+}
+
+.exp__list {
+  list-style: none;
+  display: grid;
+  gap: 22px;
+  position: relative;
+}
+
+.exp__item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+
+  p {
+    margin: 0;
+  }
+}
+
+.exp__dot {
+  width: 24px;
+  height: 20px;
+  margin: 2px 0 0 6px;
+  background: var(--hold-a);
+  border-radius: 46% 54% 40% 60% / 55% 40% 60% 45%;
+  box-shadow: 0 0 0 4px var(--surface);
+}
+
+.exp__item:nth-child(even) .exp__dot {
+  border-radius: 58% 42% 55% 45% / 45% 60% 40% 55%;
+}
+
+.exp__item--next .exp__dot {
+  background: var(--surface);
+  border: 2px dashed var(--hold-c);
+}
+
+.exp__dates {
+  font: 600 0.75rem var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.exp__role {
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.exp__org {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.exp__skills {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.exp__group {
+  display: grid;
+  gap: 10px;
+
+  ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hold:hover {
+    transform: rotate(-5deg) scale(1.05);
+  }
+}
+
+.exp__group-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 0.72rem var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.exp__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--hold-a);
+
+  &--b { background: var(--hold-b); }
+  &--c { background: var(--hold-c); }
+  &--d { background: var(--hold-d); }
+}

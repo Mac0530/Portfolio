@@ -1,74 +1,68 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { HiArrowRight } from 'react-icons/hi';
 
 import { AppWrap } from '../../wrapper';
 import { images } from '../../constants';
+import { ClimbingWall, SocialMedia } from '../../components';
+import { person } from '../../data/profile';
 import './Header.scss';
 
-const scaleVariants = {
-  whileInView:{
-    scale: [0, 1],
-    opacity: [0, 1],
-    transition: {
-      duration: 1,
-      ease: 'easeInOut'
-    }
-  }
-}
 const Header = () => {
+  const [sent, setSent] = useState(false);
+
   return (
-    <div className="app__header app__flex">
+    <div className="hero">
       <motion.div
-        whileInView={{ x: [-100, 0], opacity: [0, 1]}}
-        transition={{ duration: 0.5}}
-        className="app__header-info"
+        className="hero__copy"
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="app__header-badge">
-          <div className="badge-cmp app__flex">
-            <span>👋</span>
-            <div style={{ marginLeft: 20 }}>
-              <p className="p-text">Hello, I am</p>
-              <h1 className="head-text">Mark</h1>
-            </div>
+        {person.openToWork && (
+          <a href="#contact" className="hero__open">
+            <i aria-hidden="true" />
+            Open to new roles
+          </a>
+        )}
+
+        <div className="hero__id">
+          <div className="hero__avatar">
+            <img src={images.profile} alt={`Portrait of ${person.fullName}`} width="487" height="466" />
           </div>
-
-          <div className="tag-cmp app__flex">
-            <p className="p-text">Embedded System Developer</p>
-            <p className="p-text">QA/Tester</p>
-
+          <div>
+            <p className="hero__hi">Hello, I&apos;m</p>
+            <h1 className={`hero__name ${sent ? 'is-sent' : ''}`.trim()}>{person.firstName}</h1>
           </div>
         </div>
-        </motion.div>
 
-        <motion.div
-          whileInView={{ opacity: [0, 1] }}
-          transition={{ duration: 0.5, delayChildren: 0.5 }}
-          className="app__header-img"
-        >
-          <img src={images.profile} alt="profile_bg" />
-          <motion.img
-              whileInView={{ scale: [0, 1] }}
-              transition={{ duration: 1, ease: 'easeInOut' }}
-              src={images.circle}
-              alt="profile_circle"
-              className="overlay_circle"
-          />
-        </motion.div>
-        <motion.div
-            variant={scaleVariants}
-            whileInView={scaleVariants.whileInView}
-            className="app__header-circles"
-          >
-            {[images.cpp, images.cprogram, images.python,images.html, images.css, images.sass, images.javascript, images.react].map((circle, index) =>(
-            // {[images.cprogram, images.cpp, images.python].map((circle, index) =>(
-              <div className="circle-cmp app__flex" key={`circle-${index}`}>
-                <img src={circle} alt="circle" />
+        <p className="hero__meta">{person.fullName} · {person.location}</p>
 
-              </div>
-            ))}  
-        </motion.div>
+        <ul className="hero__tags" aria-label="Focus areas">
+          {person.roleTags.map((t) => (
+            <li key={t.label} className={`tape tape--${t.color}`}>{t.label}</li>
+          ))}
+        </ul>
+
+        <p className="hero__summary">{person.summary}</p>
+        <p className="hero__climb">Off the test bench, I&apos;m on the bouldering wall.</p>
+
+        <div className="hero__cta">
+          <a href="#work" className="btn">
+            See my work
+            <HiArrowRight aria-hidden="true" />
+          </a>
+          <a href="#contact" className="btn btn--ghost">Get in touch</a>
+        </div>
+
+        <SocialMedia />
+      </motion.div>
+
+      <div className="hero__wall">
+        <ClimbingWall onSent={setSent} />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default AppWrap(Header, 'home');
+export default AppWrap(Header, 'home', 'section--hero');
