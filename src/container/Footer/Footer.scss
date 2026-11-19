@@ -99,6 +99,14 @@
   }
 }
 
+.field--trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .field__err {
   color: var(--danger);
   font-size: 0.88rem;

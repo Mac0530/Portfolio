@@ -3,16 +3,17 @@ import { HiOutlineMail, HiOutlineDuplicate } from 'react-icons/hi';
 import { FaLinkedinIn } from 'react-icons/fa';
 
 import { AppWrap, MotionWrap } from '../../wrapper';
-import { client } from '../../client';
 import { person } from '../../data/profile';
 import './Footer.scss';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// public/contact.php on the web host emails each message to the site owner.
+const CONTACT_ENDPOINT = '/contact.php';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ username: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ username: '', email: '', message: '', company: '' });
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
+  const [status, setStatus] = useState('idle'); // idle | sending | sent | error | rate
   const [copied, setCopied] = useState(false);
 
   const { username, email, message } = formData;
@@ -26,8 +27,10 @@ const Contact = () => {
   const validate = () => {
     const next = {};
     if (!username.trim()) next.username = 'Please enter your name.';
+    else if (username.trim().length > 100) next.username = 'Please keep your name under 100 characters.';
     if (!EMAIL_RE.test(email.trim())) next.email = 'Please enter a valid email address, like name@example.com.';
     if (!message.trim()) next.message = 'Please write a short message.';
+    else if (message.trim().length > 5000) next.message = 'Please keep your message under 5,000 characters.';
     return next;
   };
 
@@ -38,14 +41,22 @@ const Contact = () => {
     if (Object.keys(found).length) return;
 
     setStatus('sending');
-    client
-      .create({
-        _type: 'contact',
+    fetch(CONTACT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         name: username.trim(),
         email: email.trim(),
         message: message.trim(),
+        company: formData.company,
+      }),
+    })
+      .then((res) => res.json().catch(() => ({})).then((body) => ({ res, body })))
+      .then(({ res, body }) => {
+        if (res.ok && body.ok) setStatus('sent');
+        else if (res.status === 429) setStatus('rate');
+        else setStatus('error');
       })
-      .then(() => setStatus('sent'))
       .catch(() => setStatus('error'));
   };
 
@@ -141,9 +152,29 @@ const Contact = () => {
               />
               {errors.message && <p className="field__err" id="contact-message-err">{errors.message}</p>}
             </div>
+            {/* Spam trap: hidden from people, bots tend to fill it in. */}
+            <div className="field field--trap" aria-hidden="true">
+              <label htmlFor="contact-company">Company</label>
+              <input
+                id="contact-company"
+                type="text"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                value={formData.company}
+                onChange={handleChangeInput}
+              />
+            </div>
             {status === 'error' && (
               <p className="field__err" role="alert">
                 Your message didn&apos;t go through. Please try again, or email me at {person.email}.
+              </p>
+            )}
+            {status === 'rate' && (
+              <p className="field__err" role="alert">
+                Too many messages from your connection in the last hour. Please try again later, or email me at
+                {' '}
+                {person.email}.
               </p>
             )}
             <button type="submit" className="btn" disabled={status === 'sending'}>
