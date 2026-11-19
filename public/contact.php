@@ -22,6 +22,12 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
+/** Writes a line to ../contact-errors.log (outside public_html). Never pass secrets to this. */
+function log_error(string $message): void
+{
+    @error_log(gmdate('Y-m-d H:i:s') . ' UTC ' . $message . "\n", 3, dirname(__DIR__) . '/contact-errors.log');
+}
+
 function respond(int $status, array $body): void
 {
     http_response_code($status);
@@ -62,7 +68,7 @@ function smtp_send(array $c, string $to, string $subject, string $replyTo, strin
     $ctx = stream_context_create(['ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
     $fp = @stream_socket_client('ssl://' . $c['host'] . ':' . $c['port'], $errno, $errstr, 15, STREAM_CLIENT_CONNECT, $ctx);
     if (!$fp) {
-        error_log("contact.php SMTP connect failed: {$errno} {$errstr}");
+        log_error("SMTP connect to {$c['host']}:{$c['port']} failed: {$errno} {$errstr}");
         return false;
     }
     stream_set_timeout($fp, 15);
@@ -83,7 +89,7 @@ function smtp_send(array $c, string $to, string $subject, string $replyTo, strin
         }
         $resp = $read();
         if (!in_array((int) substr($resp, 0, 3), $okCodes, true)) {
-            error_log("contact.php SMTP {$step} failed: " . trim($resp));
+            log_error("SMTP {$step} failed: " . (trim($resp) === '' ? '(no reply / timeout)' : trim($resp)));
             return false;
         }
         return true;
@@ -190,6 +196,9 @@ $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 $replyTo = ($headerName !== '' ? $headerName . ' ' : '') . '<' . $email . '>';
 
 $smtp = load_smtp_config();
+if ($smtp === null) {
+    log_error('SMTP settings not found or no password in ../smtp-config.php; using mail() fallback');
+}
 if ($smtp !== null) {
     // Preferred: authenticated SMTP through Hostinger's mail server.
     $sent = smtp_send($smtp, TO_EMAIL, $encodedSubject, $replyTo, $body);
@@ -206,6 +215,7 @@ if ($smtp !== null) {
 }
 
 if (!$sent) {
+    log_error($smtp !== null ? 'Message not sent (SMTP)' : 'Message not sent (mail() returned false)');
     respond(502, ['ok' => false, 'error' => 'send']);
 }
 
