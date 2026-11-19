@@ -3,12 +3,13 @@
  * Contact form endpoint for raymarkguevarra.com (Hostinger web hosting).
  *
  * Receives the site's contact form as JSON and emails it to the site owner.
- * No API keys or tokens are involved, and nothing is stored except a short
- * per-visitor rate-limit counter in the server's temp folder.
+ * Nothing is stored except a short per-visitor rate-limit counter in the
+ * server's temp folder.
  *
- * Settings: change TO_EMAIL / FROM_EMAIL below if needed. FROM_EMAIL should be
- * an address on this domain (create it in hPanel > Emails) so mail isn't
- * rejected or marked as spam. Replies go to the visitor via Reply-To.
+ * Sending: through Hostinger's SMTP server as FROM_EMAIL (a real mailbox in
+ * hPanel > Emails), using the password in ../smtp-config.php (outside
+ * public_html, see load_smtp_config). Without that file it falls back to PHP
+ * mail(). Replies go to the visitor via Reply-To.
  */
 
 const TO_EMAIL   = 'markguevarra0530@gmail.com';
@@ -26,6 +27,94 @@ function respond(int $status, array $body): void
     http_response_code($status);
     echo json_encode($body);
     exit;
+}
+
+/**
+ * SMTP settings live in smtp-config.php one folder ABOVE public_html, so they
+ * can never be downloaded from the website. Expected content:
+ *   <?php return ['host' => 'smtp.hostinger.com', 'port' => 465,
+ *                 'user' => 'no-reply@raymarkguevarra.com', 'pass' => '...'];
+ * Returns null (use the mail() fallback) until a real password is filled in.
+ */
+function load_smtp_config(): ?array
+{
+    $file = dirname(__DIR__) . '/smtp-config.php';
+    if (!is_readable($file)) {
+        return null;
+    }
+    $c = include $file;
+    if (!is_array($c) || empty($c['pass']) || $c['pass'] === 'PASTE_MAILBOX_PASSWORD_HERE') {
+        return null;
+    }
+    return [
+        'host' => (string) ($c['host'] ?? 'smtp.hostinger.com'),
+        'port' => (int) ($c['port'] ?? 465),
+        'user' => (string) ($c['user'] ?? FROM_EMAIL),
+        'pass' => (string) $c['pass'],
+    ];
+}
+
+/** Sends one plain-text email over SMTP with SSL and AUTH LOGIN. Logs the failing step (never the password). */
+function smtp_send(array $c, string $to, string $subject, string $replyTo, string $body): bool
+{
+    $errno = 0;
+    $errstr = '';
+    $ctx = stream_context_create(['ssl' => ['verify_peer' => true, 'verify_peer_name' => true]]);
+    $fp = @stream_socket_client('ssl://' . $c['host'] . ':' . $c['port'], $errno, $errstr, 15, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$fp) {
+        error_log("contact.php SMTP connect failed: {$errno} {$errstr}");
+        return false;
+    }
+    stream_set_timeout($fp, 15);
+
+    $read = function () use ($fp): string {
+        $data = '';
+        while (($line = fgets($fp, 515)) !== false) {
+            $data .= $line;
+            if (strlen($line) < 4 || $line[3] === ' ') {
+                break; // last line of a (possibly multi-line) reply
+            }
+        }
+        return $data;
+    };
+    $cmd = function (?string $line, array $okCodes, string $step) use ($fp, $read): bool {
+        if ($line !== null) {
+            fwrite($fp, $line . "\r\n");
+        }
+        $resp = $read();
+        if (!in_array((int) substr($resp, 0, 3), $okCodes, true)) {
+            error_log("contact.php SMTP {$step} failed: " . trim($resp));
+            return false;
+        }
+        return true;
+    };
+
+    $domain = substr((string) strrchr($c['user'], '@'), 1);
+    $message = 'Date: ' . date('r') . "\r\n"
+        . 'From: ' . FROM_NAME . ' <' . $c['user'] . ">\r\n"
+        . 'To: <' . $to . ">\r\n"
+        . 'Reply-To: ' . $replyTo . "\r\n"
+        . 'Subject: ' . $subject . "\r\n"
+        . 'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . $domain . ">\r\n"
+        . "MIME-Version: 1.0\r\n"
+        . "Content-Type: text/plain; charset=UTF-8\r\n"
+        . "Content-Transfer-Encoding: base64\r\n\r\n"
+        // Base64 lines never start with ".", so no SMTP dot-stuffing is needed.
+        . rtrim(chunk_split(base64_encode($body), 76, "\r\n")) . "\r\n";
+
+    $ok = $cmd(null, [220], 'greeting')
+        && $cmd('EHLO ' . $domain, [250], 'EHLO')
+        && $cmd('AUTH LOGIN', [334], 'AUTH')
+        && $cmd(base64_encode($c['user']), [334], 'AUTH user')
+        && $cmd(base64_encode($c['pass']), [235], 'AUTH password')
+        && $cmd('MAIL FROM:<' . $c['user'] . '>', [250], 'MAIL FROM')
+        && $cmd('RCPT TO:<' . $to . '>', [250, 251], 'RCPT TO')
+        && $cmd('DATA', [354], 'DATA')
+        && $cmd($message . '.', [250], 'message');
+
+    @fwrite($fp, "QUIT\r\n");
+    fclose($fp);
+    return $ok;
 }
 
 // Only POST requests.
@@ -97,21 +186,24 @@ $body = "New message from the contact form on raymarkguevarra.com\n\n"
 // Letters, numbers, spaces and . ' - only, so the name can't break the header.
 $headerName = trim((string) preg_replace("/[^\\p{L}\\p{N} .'-]/u", '', $name));
 
-$headers = [
-    'From: ' . FROM_NAME . ' <' . FROM_EMAIL . '>',
-    'Reply-To: ' . ($headerName !== '' ? $headerName . ' ' : '') . '<' . $email . '>',
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 8bit',
-];
+$encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+$replyTo = ($headerName !== '' ? $headerName . ' ' : '') . '<' . $email . '>';
 
-$sent = mail(
-    TO_EMAIL,
-    '=?UTF-8?B?' . base64_encode($subject) . '?=',
-    $body,
-    implode("\r\n", $headers),
-    '-f' . FROM_EMAIL
-);
+$smtp = load_smtp_config();
+if ($smtp !== null) {
+    // Preferred: authenticated SMTP through Hostinger's mail server.
+    $sent = smtp_send($smtp, TO_EMAIL, $encodedSubject, $replyTo, $body);
+} else {
+    // Fallback while the SMTP password hasn't been set up.
+    $headers = [
+        'From: ' . FROM_NAME . ' <' . FROM_EMAIL . '>',
+        'Reply-To: ' . $replyTo,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: 8bit',
+    ];
+    $sent = mail(TO_EMAIL, $encodedSubject, $body, implode("\r\n", $headers), '-f' . FROM_EMAIL);
+}
 
 if (!$sent) {
     respond(502, ['ok' => false, 'error' => 'send']);
