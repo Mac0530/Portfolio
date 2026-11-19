@@ -108,11 +108,30 @@ function smtp_send(array $c, string $to, string $subject, string $replyTo, strin
         // Base64 lines never start with ".", so no SMTP dot-stuffing is needed.
         . rtrim(chunk_split(base64_encode($body), 76, "\r\n")) . "\r\n";
 
-    $ok = $cmd(null, [220], 'greeting')
-        && $cmd('EHLO ' . $domain, [250], 'EHLO')
-        && $cmd('AUTH LOGIN', [334], 'AUTH')
-        && $cmd(base64_encode($c['user']), [334], 'AUTH user')
-        && $cmd(base64_encode($c['pass']), [235], 'AUTH password')
+    $ok = $cmd(null, [220], 'greeting');
+    if ($ok) {
+        fwrite($fp, 'EHLO ' . $domain . "\r\n");
+        $ehlo = $read();
+        $ok = (int) substr($ehlo, 0, 3) === 250;
+        if (!$ok) {
+            log_error('SMTP EHLO failed: ' . trim($ehlo));
+        }
+    }
+    if ($ok) {
+        // Try AUTH PLAIN first, then AUTH LOGIN; log the offered methods if both fail.
+        $ok = $cmd('AUTH PLAIN ' . base64_encode("\0" . $c['user'] . "\0" . $c['pass']), [235], 'AUTH PLAIN');
+        if (!$ok) {
+            $ok = $cmd('AUTH LOGIN', [334], 'AUTH LOGIN')
+                && $cmd(base64_encode($c['user']), [334], 'AUTH LOGIN user')
+                && $cmd(base64_encode($c['pass']), [235], 'AUTH LOGIN password');
+        }
+        if (!$ok) {
+            preg_match('/^250[ -]AUTH[ =](.*)$/mi', $ehlo, $m);
+            log_error('SMTP login refused for ' . $c['user'] . ' (password length ' . strlen($c['pass'])
+                . '). Server auth methods: ' . (isset($m[1]) ? trim($m[1]) : 'not listed'));
+        }
+    }
+    $ok = $ok
         && $cmd('MAIL FROM:<' . $c['user'] . '>', [250], 'MAIL FROM')
         && $cmd('RCPT TO:<' . $to . '>', [250, 251], 'RCPT TO')
         && $cmd('DATA', [354], 'DATA')
