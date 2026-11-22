@@ -1,0 +1,34 @@
+.cases {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+
+.case {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+
+  .tape {
+    justify-self: start;
+    background: var(--bg);
+  }
+}
+
+.case__tools {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+
+  li {
+    font: 500 0.75rem var(--font-mono);
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--fg);
+  }
+}

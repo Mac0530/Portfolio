@@ -1,0 +1,52 @@
+.about__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+}
+
+.about__card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.about__hold {
+  width: 30px;
+  height: 24px;
+  background: var(--hold-a);
+  border-radius: 46% 54% 40% 60% / 55% 40% 60% 45%;
+  margin-bottom: 4px;
+
+  &--b { background: var(--hold-b); }
+  &--c { background: var(--hold-c); }
+  &--d { background: var(--hold-d); }
+}
+
+.about__langs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+
+  ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  li {
+    display: inline-flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 0.92rem;
+
+    span {
+      color: var(--muted);
+    }
+  }
+}
