@@ -1,6 +1,6 @@
 # Builds the React site on every push to main and publishes the result to the
 # hostinger-deploy branch. Hostinger pulls that branch into public_html through
-# its Git auto-deployment webhook.
+# its Git auto-deployment webhook. Never edit hostinger-deploy by hand.
 name: Build and publish to Hostinger
 
 on:
@@ -11,37 +11,62 @@ on:
 permissions:
   contents: write
 
+# One deploy at a time; a newer push waits for the running one to finish.
 concurrency:
   group: hostinger-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend_react
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend_react/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend_react
         run: npm ci
 
       - name: Build
+        working-directory: frontend_react
         env:
           CI: false # don't fail the build on lint warnings
         run: npm run build
 
+      - name: Check the build
+        run: |
+          for f in index.html contact.php .htaccess; do
+            test -s "frontend_react/build/$f" || { echo "::error::build/$f is missing"; exit 1; }
+          done
+
+      # Adds a new commit on top of hostinger-deploy (never a force push), so
+      # Hostinger's "git pull" always fast-forwards.
       - name: Publish build to the hostinger-deploy branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: hostinger-deploy
-          publish_dir: ./frontend_react/build
-          commit_message: Deploy ${{ github.sha }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          REMOTE="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          DEPLOY_DIR="$RUNNER_TEMP/deploy"
+          if git ls-remote --exit-code --heads "$REMOTE" hostinger-deploy >/dev/null; then
+            git clone --quiet --depth 1 --branch hostinger-deploy "$REMOTE" "$DEPLOY_DIR"
+          else
+            git init --quiet -b hostinger-deploy "$DEPLOY_DIR"
+          fi
+          find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a frontend_react/build/. "$DEPLOY_DIR"/
+          cd "$DEPLOY_DIR"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Build unchanged; nothing to deploy."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit --quiet -m "Deploy ${GITHUB_SHA}"
+          git push --quiet "$REMOTE" HEAD:hostinger-deploy
