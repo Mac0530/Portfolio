@@ -1,0 +1,2 @@
+# Hostinger serves the site from a Git checkout, so hide the .git folder.
+RedirectMatch 404 /\.git
