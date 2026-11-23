@@ -9,7 +9,7 @@ export const person = {
   summary:
     'System test and validation engineer with 12 years in embedded software for cars and payment devices. I validate ECU software, certify payment devices against EMV, NFC Forum and FeliCa, and work with customers in English and Japanese.',
   roleTags: [
-    { label: 'Test & validation', color: 'a' },
+    { label: 'Test & Validation', color: 'a' },
     { label: 'Automotive embedded', color: 'b' },
     { label: 'Payment certification', color: 'c' },
   ],
