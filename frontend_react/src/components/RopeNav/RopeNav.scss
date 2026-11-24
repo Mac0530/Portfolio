@@ -1,21 +1,24 @@
+// Rope centre line sits at x = 32px inside the 64px rail.
+$rail-w: 64px;
+
 .rope {
   position: fixed;
-  right: max(24px, calc(env(safe-area-inset-right, 0px) + 16px));
+  right: max(16px, calc(env(safe-area-inset-right, 0px) + 8px));
   top: 18vh;
   bottom: 14vh;
-  width: 40px;
+  width: $rail-w;
   z-index: 4;
 
+  // Faint route line: where the rope will go. The real rope is .rope__line.
   &::before {
     content: "";
     position: absolute;
-    left: 19px;
+    left: 31.5px;
     top: 0;
     bottom: 0;
-    width: 3px;
-    border-radius: 3px;
-    background: repeating-linear-gradient(180deg, var(--hold-b) 0 8px, var(--hold-d) 8px 16px);
-    opacity: 0.85;
+    width: 1px;
+    background: var(--muted);
+    opacity: 0.3;
   }
 
   ul {
@@ -27,38 +30,35 @@
   li {
     position: absolute;
     left: 0;
-    width: 40px;
+    width: $rail-w;
     height: 22px;
     transform: translateY(50%);
   }
 
   a {
     display: block;
-    width: 40px;
+    width: $rail-w;
     height: 22px;
     position: relative;
 
-    // quickdraw carabiner
+    // quickdraw carabiner: empty until the climber clips it
     &::before {
       content: "";
       position: absolute;
-      left: 13px;
+      left: 25px;
       top: 2px;
       width: 14px;
       height: 18px;
       border: 3px solid var(--muted);
       border-radius: 8px;
       background: var(--bg);
-      transition: border-color 0.2s ease;
-    }
-
-    &.is-here::before {
-      border-color: var(--accent);
+      opacity: 0.75;
+      transition: border-color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
     }
 
     span {
       position: absolute;
-      right: 46px;
+      right: $rail-w + 6px;
       top: 50%;
       transform: translateY(-50%);
       white-space: nowrap;
@@ -79,19 +79,100 @@
       opacity: 1;
     }
   }
+
+  // Clipped: the rope runs through it, so the gate is see-through.
+  li.is-clipped a::before {
+    border-color: var(--fg);
+    background: transparent;
+    opacity: 1;
+  }
+
+  li a.is-here::before,
+  li.is-clipped a.is-here::before {
+    border-color: var(--accent);
+    opacity: 1;
+  }
 }
 
-.rope__me {
+// The live rope, from the belay device up to the climber's harness.
+.rope__line {
   position: absolute;
-  left: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 3px solid var(--bg);
-  transform: translateY(50%);
+  left: 30.5px;
+  bottom: -48px;
+  width: 3px;
+  height: 0;
+  border-radius: 3px;
+  background: repeating-linear-gradient(0deg, var(--hold-b) 0 8px, var(--hold-d) 8px 16px);
   pointer-events: none;
-  transition: bottom 0.12s linear;
+}
+
+// Harness (y = 33 of 60) sits on the rail's bottom edge before translateY.
+.rope__climber {
+  position: absolute;
+  left: 12px;
+  bottom: -27px;
+  width: 40px;
+  height: 60px;
+  pointer-events: none;
+  will-change: transform;
+
+  svg {
+    display: block;
+    overflow: visible;
+  }
+}
+
+// Stands below the rail; the belay device lands 48px under it (14 + 28 * 1.2).
+.rope__belayer {
+  position: absolute;
+  left: 14px;
+  top: calc(100% + 14px);
+  width: 36px;
+  height: 60px;
+  pointer-events: none;
+
+  svg {
+    display: block;
+    overflow: visible;
+  }
+}
+
+.fig__limb {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fig__shirt {
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.fig__shirt--belay {
+  stroke: var(--hold-c);
+  stroke-width: 7;
+}
+
+.fig__head {
+  fill: var(--fg);
+}
+
+.fig__harness {
+  fill: var(--hold-d);
+}
+
+.fig__device {
+  fill: var(--muted);
+}
+
+.fig__rope {
+  fill: none;
+  stroke: var(--hold-b);
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 @media (max-width: 1099px) {

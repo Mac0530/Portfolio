@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BsPauseFill, BsPlayFill } from 'react-icons/bs';
 
+import { joint } from '../../utils/limbs';
 import './ClimbingWall.scss';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -35,19 +36,6 @@ function blob(cx, cy, r, rand, n = 7) {
     d += ` Q${f(p[0])} ${f(p[1])} ${f((p[0] + q[0]) / 2)} ${f((p[1] + q[1]) / 2)}`;
   }
   return `${d}Z`;
-}
-
-// Two-segment limb: returns the elbow/knee point that lets the limb reach the target.
-function joint(a, t, l1, l2, bend) {
-  const dx = t.x - a.x;
-  const dy = t.y - a.y;
-  let d = Math.hypot(dx, dy);
-  d = Math.max(Math.abs(l1 - l2) + 0.01, Math.min(d, l1 + l2 - 0.01));
-  const base = Math.atan2(dy, dx);
-  const c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
-  const ang = Math.acos(Math.max(-1, Math.min(1, c)));
-  const th = base + bend * ang;
-  return { x: a.x + l1 * Math.cos(th), y: a.y + l1 * Math.sin(th) };
 }
 
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
